@@ -27,7 +27,10 @@ contract PoliPresale is Ownable {
 
     event PresaleMint(address buyer, uint256 numberOfTokens);
 
-    constructor(address initialOwner, address tokenAddress) Ownable(initialOwner) {
+    constructor(
+        address initialOwner,
+        address tokenAddress
+    ) Ownable(initialOwner) {
         PoliToken = TokenMintable(tokenAddress);
 
         completionTime = block.timestamp + (48 * 3600); // 48 hours
@@ -49,18 +52,34 @@ contract PoliPresale is Ownable {
         completionTime = newTime;
     }
 
-    function reclaimFunds(address recipient) external onlyOwner { // TODO it's important to refund BNB
-        require (presaleActive == false, "Reclaim not allowed");
+    function setRate(uint) external onlyOwner {
+        require(presaleActive, "Presale already paused");
+        presaleActive = false;
+    }
+
+    function reclaimFunds(address recipient) external onlyOwner {
+        // TODO it's important to refund BNB
+        require(presaleActive == false, "Reclaim not allowed");
 
         assert(payable(recipient).send(address(this).balance));
     }
 
-    function tranferToLiquidity(address[] memory recipients, uint256[] memory amounts) external onlyOwner {
-        require (presaleActive == false, "Transfer not allowed");
-        require(recipients.length == amounts.length, "Recipients and amounts length mismatch");
+    function tranferToLiquidity(
+        address[] memory recipients,
+        uint256[] memory amounts
+    ) external onlyOwner {
+        require(presaleActive == false, "Transfer not allowed");
+        require(
+            recipients.length == amounts.length,
+            "Recipients and amounts length mismatch"
+        );
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            PoliToken.transferFromForMinter(address(1), recipients[i], amounts[i]);
+            PoliToken.transferFromForMinter(
+                address(1),
+                recipients[i],
+                amounts[i]
+            );
         }
     }
 
@@ -100,5 +119,4 @@ contract PoliPresale is Ownable {
 
         emit PresaleMint(buyer, numberOfTokens);
     }
-
 }
