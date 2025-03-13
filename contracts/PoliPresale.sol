@@ -80,7 +80,7 @@ contract PoliPresale is Ownable {
         assert(payable(recipient).send(address(this).balance));
     }
 
-    function tranferToLiquidity(
+    function transferToLiquidity(
         address[] memory recipients,
         uint256[] memory amounts
     ) external onlyOwner {
@@ -126,5 +126,4 @@ contract PoliPresale is Ownable {
 
         emit PresaleMint(buyer, numberOfTokens);
     }
-    
 }

@@ -8,14 +8,19 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 import "./interface/TokenMintable.sol";
 
-contract PoliToken is ERC20, ERC20Pausable, Ownable, AccessControl, TokenMintable {
-    
+contract PoliToken is
+    ERC20,
+    ERC20Pausable,
+    Ownable,
+    AccessControl,
+    TokenMintable
+{
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    
+
     constructor(
         address initialOwner
     ) ERC20("Poli", "$POLI") Ownable(initialOwner) {
-         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
+        _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
     }
 
     function pause() public onlyOwner {
@@ -26,11 +31,18 @@ contract PoliToken is ERC20, ERC20Pausable, Ownable, AccessControl, TokenMintabl
         _unpause();
     }
 
-    function mintTo(address account, uint256 value) external override onlyRole(MINTER_ROLE) {
+    function mintTo(
+        address account,
+        uint256 value
+    ) external override onlyRole(MINTER_ROLE) {
         _update(address(0), account, value);
     }
 
-    function transferFromForMinter(address from, address to, uint256 value) external onlyRole(MINTER_ROLE) {
+    function transferFromForMinter(
+        address from,
+        address to,
+        uint256 value
+    ) external onlyRole(MINTER_ROLE) {
         _update(from, to, value);
     }
 
@@ -41,5 +53,4 @@ contract PoliToken is ERC20, ERC20Pausable, Ownable, AccessControl, TokenMintabl
     ) internal override(ERC20, ERC20Pausable) {
         super._update(from, to, value);
     }
-
 }

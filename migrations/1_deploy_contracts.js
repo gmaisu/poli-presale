@@ -1,14 +1,8 @@
 const PoliTokenContract = artifacts.require("PoliToken.sol");
 const PoliPresaleContract = artifacts.require("PoliPresale.sol");
 
-var owner = "";
-
 module.exports = async function (deployer, network, accounts) {
-    if (network === "test") {
-        return;
-    }
-
-    owner = accounts[0];
+    const owner = accounts[0];
 
     console.log(`Owner address is ${owner}`);
 
@@ -16,7 +10,7 @@ module.exports = async function (deployer, network, accounts) {
 
     const POLI_TOKEN = await PoliTokenContract.deployed();
 
-    await deployer.deploy(PoliPresaleContract, owner);
+    await deployer.deploy(PoliPresaleContract, owner, POLI_TOKEN.address);
 
     const PRESALE = await PoliPresaleContract.deployed();
 
