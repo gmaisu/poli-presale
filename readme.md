@@ -48,7 +48,9 @@ Now you have to replace parameters
 
 [//]: #
 
-      npx truffle migrate --network bsc_mainnet
+      Test environment: npm run migrate:test
+
+      Production enviroment: npm run migrate:prod
 
 4. After deployment, you will know smart contract addresses
 
@@ -70,18 +72,24 @@ Now you have to replace parameters
 
 [//]: #
 
-      node .\scripts\complete-presail.js
+      Test environment: npm run complete:test
+
+      Production enviroment: npm run complete:prod
 
 3. Run reclaiming funds command to BNB_FUNDS_WALLET_ADDRESS
 
 [//]: #
 
-      node .\scripts\reclaim-funds.js
+      Test environment: npm run reclaim:test
+
+      Production enviroment: npm run reclaim:prod
 
 4. Run distributing team tokens command. it's automated process
 
 [//]: #
 
-      node .\scripts\transfer.js
+      Test environment: npm run transfer:test
+
+      Production enviroment: npm run transfer:prod
 
 You will see new created file named **distribution.csv** You can see here all of 100 wallet addresses with private keys and received amounts
