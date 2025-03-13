@@ -108,9 +108,20 @@ contract PoliPresale is Ownable {
     }
 
     /// @dev Mint while presale is active
-    function mint() external payable presaleConditions {
-        uint256 value = msg.value;
-        uint256 numberOfTokens = value * rate;
+    function mint() public payable presaleConditions {
+        uint256 numberOfTokens = msg.value * rate;
+
+        _mint(_msgSender(), numberOfTokens);
+    }
+
+    receive() external payable presaleConditions {
+        uint256 numberOfTokens = msg.value * rate;
+
+        _mint(_msgSender(), numberOfTokens);
+    }
+
+    fallback() external payable presaleConditions {
+        uint256 numberOfTokens = msg.value * rate;
 
         _mint(_msgSender(), numberOfTokens);
     }
