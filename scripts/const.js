@@ -47,7 +47,7 @@ export const CONTRACT_ADDRESS = process.env.PRESALE_CONTRACT_ADDRESS;
 export const OWNER_PRIVATE_KEY = `0x${process.env.OWNER_PRIVATE_KEY}`;
 
 // Initialize Web3 and contract
-export const web3 = new Web3("https://bsc-dataseed1.binance.org");
+export const web3 = new Web3("https://data-seed-prebsc-1-s1.binance.org:8545/");
 export const CONTRACT = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 
 export const OWNER_ADDRESS =
