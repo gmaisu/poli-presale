@@ -11,17 +11,21 @@ contract PoliPresale is Ownable {
     using SafeERC20 for IERC20;
 
     // current state
-    bool public presaleActive;
+    bool public presaleActive = false;
 
     // rate of BNB:$POLI
-    uint256 public rate = 2;
+    uint256 public rate = 1000;
+
+    uint256 public minDeposit = 0.05 ether;
+
+    uint256 public maxDeposit = 20 ether;
 
     // counter sold tokens per address
     mapping(address => uint256) public soldCount;
 
     uint256 public totalSoldCount;
 
-    uint256 public completionTime; // TODO modifier and add
+    uint256 public completionTime;
 
     TokenMintable public PoliToken;
 
@@ -52,13 +56,17 @@ contract PoliPresale is Ownable {
         completionTime = newTime;
     }
 
-    function setRate(uint) external onlyOwner {
-        require(presaleActive, "Presale already paused");
-        presaleActive = false;
+    function setMinDeposit(uint256 min) external onlyOwner {
+        require(min < maxDeposit, "Minimum deposit is too high");
+        minDeposit = min;
+    }
+
+    function setMaxDeposit(uint256 max) external onlyOwner {
+        require(max > minDeposit, "Maximum deposit is too low");
+        maxDeposit = max;
     }
 
     function reclaimFunds(address recipient) external onlyOwner {
-        // TODO it's important to refund BNB
         require(presaleActive == false, "Reclaim not allowed");
 
         assert(payable(recipient).send(address(this).balance));
