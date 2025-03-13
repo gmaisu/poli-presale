@@ -5,7 +5,7 @@ const csvWriter = require("csv-writer").createObjectCsvWriter;
 require("dotenv").config();
 
 // Configuration
-const BSC_RPC_URL = "https://bsc-dataseed1.binance.org";
+const BSC_RPC_URL = "https://data-seed-prebsc-1-s1.binance.org:8545/";
 const CONTRACT_ABI = [
     {
         inputs: [
