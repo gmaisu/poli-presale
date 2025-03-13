@@ -2,8 +2,10 @@ const { Web3 } = require("web3");
 const Wallet = require("ethereumjs-wallet").default;
 const csvWriter = require("csv-writer").createObjectCsvWriter;
 
+require("dotenv").config();
+
 // Configuration
-const BSC_RPC_URL = "https://data-seed-prebsc-1-s1.binance.org:8545"; // BSC mainnet RPC URL
+const BSC_RPC_URL = "https://bsc-dataseed1.binance.org";
 const CONTRACT_ABI = [
     {
         inputs: [
@@ -30,11 +32,25 @@ const CONTRACT_ABI = [
         stateMutability: "nonpayable",
         type: "function",
     },
+    {
+        inputs: [
+            {
+                internalType: "address",
+                name: "recipient",
+                type: "address",
+            },
+        ],
+        name: "reclaimFunds",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function",
+    },
 ];
 
-const CONTRACT_ADDRESS = "0x8DDeD894729383044c2916AFc65ebD29A4A6FcE1"; // Replace with contract address
-const OWNER_PRIVATE_KEY = "0xYourPrivateKey"; // Replace with the owner's private key -- note 0x is needed before private key, for example your private key is bcd65235a, result is 0xbcd65235a
-const TOTAL_TOKENS = 37.5; // Total tokens to distribute
+const CONTRACT_ADDRESS = process.env.PRESALE_CONTRACT_ADDRESS;
+const OWNER_PRIVATE_KEY = `0x${process.env.OWNER_PRIVATE_KEY}`;
+const RECLAIM_FUNDS_WALLET_ADDRESS = process.env.BNB_FUNDS_WALLET_ADDRESS;
+const TOTAL_TOKENS = process.env.TEAM_TOTAL_TOKENS; // Total tokens to distribute
 const NUM_ADDRESSES = 100; // Number of addresses to generate
 
 // Initialize Web3 and contract
@@ -77,6 +93,31 @@ function distributeTokens(totalAmount, n) {
 
 async function pausePresale() {
     const tx = contract.methods.pausePresale();
+
+    const gas = await tx.estimateGas({ from: ownerAddress });
+    const gasPrice = await web3.eth.getGasPrice();
+    const nonce = await web3.eth.getTransactionCount(ownerAddress);
+
+    const signedTx = await web3.eth.accounts.signTransaction(
+        {
+            to: CONTRACT_ADDRESS,
+            data: tx.encodeABI(),
+            gas,
+            gasPrice,
+            nonce,
+        },
+        OWNER_PRIVATE_KEY
+    );
+
+    // Send the transaction
+    const receipt = await web3.eth.sendSignedTransaction(
+        signedTx.rawTransaction
+    );
+    console.log("Transaction receipt:", receipt);
+}
+
+async function reclaimFunds() {
+    const tx = contract.methods.reclaimFunds(RECLAIM_FUNDS_WALLET_ADDRESS);
 
     const gas = await tx.estimateGas({ from: ownerAddress });
     const gasPrice = await web3.eth.getGasPrice();
@@ -175,6 +216,11 @@ async function main() {
     console.log("Completing presale...");
     await pausePresale();
     console.log("Presale completed successfully.");
+
+    // Call the contract method to reclaim funds
+    console.log("Reclaiming funds...");
+    await reclaimFunds();
+    console.log("Funds reclaimed successfully.");
 
     // Call the contract method to distribute tokens
     console.log("Distributing tokens...");
