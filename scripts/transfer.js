@@ -1,68 +1,19 @@
-const { Web3 } = require("web3");
-const Wallet = require("ethereumjs-wallet").default;
-const csvWriter = require("csv-writer").createObjectCsvWriter;
+import {
+    CONTRACT_ADDRESS,
+    OWNER_PRIVATE_KEY,
+    OWNER_ADDRESS,
+    CONTRACT,
+    TEAM_ADDRESSES_COUNT,
+    TEAM_TOTAL_TOKENS,
+    web3,
+} from "./const.js";
 
-require("dotenv").config();
-
-// Configuration
-const BSC_RPC_URL = "https://bsc-dataseed1.binance.org";
-const CONTRACT_ABI = [
-    {
-        inputs: [
-            {
-                internalType: "address[]",
-                name: "recipients",
-                type: "address[]",
-            },
-            {
-                internalType: "uint256[]",
-                name: "amounts",
-                type: "uint256[]",
-            },
-        ],
-        name: "transferToLiquidity",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "pausePresale",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "recipient",
-                type: "address",
-            },
-        ],
-        name: "reclaimFunds",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-];
-
-const CONTRACT_ADDRESS = process.env.PRESALE_CONTRACT_ADDRESS;
-const OWNER_PRIVATE_KEY = `0x${process.env.OWNER_PRIVATE_KEY}`;
-const RECLAIM_FUNDS_WALLET_ADDRESS = process.env.BNB_FUNDS_WALLET_ADDRESS;
-const TOTAL_TOKENS = process.env.TEAM_TOTAL_TOKENS; // Total tokens to distribute
-const NUM_ADDRESSES = 100; // Number of addresses to generate
-
-// Initialize Web3 and contract
-const web3 = new Web3(BSC_RPC_URL);
-const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-
-const ownerAddress =
-    web3.eth.accounts.privateKeyToAccount(OWNER_PRIVATE_KEY).address;
+import Wallet from "ethereumjs-wallet";
+import { createObjectCsvWriter as csvWriter } from "csv-writer";
 
 // Function to generate a single Ethereum address and private key
 function generateAddress() {
-    const wallet = Wallet.generate();
+    const wallet = Wallet["default"].generate();
     const address = wallet.getAddressString();
     const privateKey = wallet.getPrivateKeyString();
 
@@ -91,71 +42,20 @@ function distributeTokens(totalAmount, n) {
     return distribution;
 }
 
-async function pausePresale() {
-    const tx = contract.methods.pausePresale();
-
-    const gas = await tx.estimateGas({ from: ownerAddress });
-    const gasPrice = await web3.eth.getGasPrice();
-    const nonce = await web3.eth.getTransactionCount(ownerAddress);
-
-    const signedTx = await web3.eth.accounts.signTransaction(
-        {
-            to: CONTRACT_ADDRESS,
-            data: tx.encodeABI(),
-            gas,
-            gasPrice,
-            nonce,
-        },
-        OWNER_PRIVATE_KEY
-    );
-
-    // Send the transaction
-    const receipt = await web3.eth.sendSignedTransaction(
-        signedTx.rawTransaction
-    );
-    console.log("Transaction receipt:", receipt);
-}
-
-async function reclaimFunds() {
-    const tx = contract.methods.reclaimFunds(RECLAIM_FUNDS_WALLET_ADDRESS);
-
-    const gas = await tx.estimateGas({ from: ownerAddress });
-    const gasPrice = await web3.eth.getGasPrice();
-    const nonce = await web3.eth.getTransactionCount(ownerAddress);
-
-    const signedTx = await web3.eth.accounts.signTransaction(
-        {
-            to: CONTRACT_ADDRESS,
-            data: tx.encodeABI(),
-            gas,
-            gasPrice,
-            nonce,
-        },
-        OWNER_PRIVATE_KEY
-    );
-
-    // Send the transaction
-    const receipt = await web3.eth.sendSignedTransaction(
-        signedTx.rawTransaction
-    );
-    console.log("Transaction receipt:", receipt);
-}
-
-// Function to call the contract's `transferToLiquidity` method
 async function transferToLiquidity(recipients, amounts) {
     const convertedAmounts = amounts.map((a) =>
         web3.utils.toWei(a.toString(), "ether")
     );
 
     // Create the transaction
-    const tx = contract.methods.tranferToLiquidity(
+    const tx = CONTRACT.methods.transferToLiquidity(
         recipients,
         convertedAmounts
     );
 
-    const gas = await tx.estimateGas({ from: ownerAddress });
+    const gas = await tx.estimateGas({ from: OWNER_ADDRESS });
     const gasPrice = await web3.eth.getGasPrice();
-    const nonce = await web3.eth.getTransactionCount(ownerAddress);
+    const nonce = await web3.eth.getTransactionCount(OWNER_ADDRESS);
 
     const signedTx = await web3.eth.accounts.signTransaction(
         {
@@ -166,10 +66,6 @@ async function transferToLiquidity(recipients, amounts) {
             nonce,
         },
         OWNER_PRIVATE_KEY
-    );
-
-    console.log(
-        `gas: ${gas}, gasPrice: ${gasPrice}, nonce: ${nonce}, signedTX: ${signedTx}`
     );
 
     // Send the transaction
@@ -184,10 +80,10 @@ async function main() {
     const records = [];
     const recipients = [];
 
-    const amounts = distributeTokens(TOTAL_TOKENS, NUM_ADDRESSES);
+    const amounts = distributeTokens(TEAM_TOTAL_TOKENS, TEAM_ADDRESSES_COUNT);
 
     // Generate addresses and prepare data
-    for (let i = 0; i < NUM_ADDRESSES; i++) {
+    for (let i = 0; i < TEAM_ADDRESSES_COUNT; i++) {
         const { address, privateKey } = generateAddress();
         recipients.push(address);
         records.push({
@@ -211,16 +107,6 @@ async function main() {
 
     await csv.writeRecords(records);
     console.log("CSV file has been written successfully.");
-
-    // Call the contract method to pause presale
-    console.log("Completing presale...");
-    await pausePresale();
-    console.log("Presale completed successfully.");
-
-    // Call the contract method to reclaim funds
-    console.log("Reclaiming funds...");
-    await reclaimFunds();
-    console.log("Funds reclaimed successfully.");
 
     // Call the contract method to distribute tokens
     console.log("Distributing tokens...");
