@@ -40,6 +40,14 @@ contract PoliPresale is Ownable {
         completionTime = block.timestamp + (48 * 3600); // 48 hours
     }
 
+    modifier presaleConditions() {
+        require(block.timestamp <= completionTime, "Presale completed");
+        require(presaleActive, "Buying not allowed");
+        require(msg.value >= minDeposit, "Not enough Funds");
+        require(msg.value <= maxDeposit, "Exceeds max amount");
+        _;
+    }
+
     /// Pause presale (initiated state, but can be used for unexpected scenarios)
     function pausePresale() external onlyOwner {
         require(presaleActive, "Presale already paused");
@@ -91,25 +99,16 @@ contract PoliPresale is Ownable {
         }
     }
 
-    /// @dev Mint while state is Sale
+    /// @dev Mint while presale is active withtin numberOfTokens parameter to validate amounts
     /// @param numberOfTokens - How many tokens to mint to validate amounts within a predefined rate
-    function mint(uint256 numberOfTokens) external payable {
-        require(block.timestamp <= completionTime, "Presale completed");
-        require(presaleActive, "Buying not allowed");
-        require(msg.value > 0, "Not enough Funds");
-
-        uint256 value = msg.value;
-        require(value * rate == numberOfTokens, "Wrong number of tokens");
+    function mint(uint256 numberOfTokens) external payable presaleConditions {
+        require(msg.value * rate == numberOfTokens, "Wrong number of tokens");
 
         _mint(_msgSender(), numberOfTokens);
     }
 
-    /// @dev Mint while state is Sale
-    function mint() external payable {
-        require(block.timestamp <= completionTime, "Presale completed");
-        require(presaleActive, "Buying not allowed");
-        require(msg.value > 0, "Not enough Funds");
-
+    /// @dev Mint while presale is active
+    function mint() external payable presaleConditions {
         uint256 value = msg.value;
         uint256 numberOfTokens = value * rate;
 
@@ -127,4 +126,5 @@ contract PoliPresale is Ownable {
 
         emit PresaleMint(buyer, numberOfTokens);
     }
+    
 }
