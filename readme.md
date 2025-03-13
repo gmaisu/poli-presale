@@ -34,7 +34,7 @@ Now you have to change some parameters in code
 
 [//]: #
 
-      npx truffle migrate --network bsc_mainnet
+      npx truffle migrate --network bsc_testnet
 
 4. After deployment, you will know smart contract addresses
 
