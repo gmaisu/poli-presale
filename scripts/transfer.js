@@ -80,10 +80,11 @@ async function main() {
     const recipients = [];
 
     const totalSold = await CONTRACT.methods.totalSoldCount().call();
-    const teamDistributeTotalAmount = (totalSold * 15) / 100;
+    const teamDistributeTotalAmount =
+        (web3.utils.fromWei(totalSold, "ether") * 15) / 100;
 
     const amounts = distributeTokens(
-        web3.utils.fromWei(teamDistributeTotalAmount, "ether"),
+        teamDistributeTotalAmount,
         TEAM_ADDRESSES_COUNT
     );
 
