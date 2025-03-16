@@ -13,6 +13,8 @@ contract PoliPresale is Ownable {
     // current state
     bool public presaleActive = false;
 
+    bool public transferred = false;
+
     // rate of BNB:$POLI
     uint256 public rate = 1000;
 
@@ -26,6 +28,8 @@ contract PoliPresale is Ownable {
     uint256 public totalSoldCount;
 
     uint256 public completionTime;
+
+    uint256 public maxSupply = 1_000_000_000 ether;
 
     TokenMintable public PoliToken;
 
@@ -60,18 +64,22 @@ contract PoliPresale is Ownable {
         presaleActive = true;
     }
 
-    function setCompletionTime(uint256 newTime) external onlyOwner {
-        completionTime = newTime;
+    function setCompletionTime(uint256 newCompletionTime) external onlyOwner {
+        completionTime = newCompletionTime;
     }
 
-    function setMinDeposit(uint256 min) external onlyOwner {
-        require(min < maxDeposit, "Minimum deposit is too high");
-        minDeposit = min;
+    function setMinDeposit(uint256 newMinDeposit) external onlyOwner {
+        require(newMinDeposit < maxDeposit, "Minimum deposit is too high");
+        minDeposit = newMinDeposit;
     }
 
-    function setMaxDeposit(uint256 max) external onlyOwner {
-        require(max > minDeposit, "Maximum deposit is too low");
-        maxDeposit = max;
+    function setMaxDeposit(uint256 newMaxDeposit) external onlyOwner {
+        require(newMaxDeposit > minDeposit, "Maximum deposit is too low");
+        maxDeposit = newMaxDeposit;
+    }
+
+    function setMaxSupply(uint256 newMaxSupply) external onlyOwner {
+        maxSupply = newMaxSupply;
     }
 
     function reclaimFunds(address recipient) external onlyOwner {
@@ -84,6 +92,7 @@ contract PoliPresale is Ownable {
         address[] memory recipients,
         uint256[] memory amounts
     ) external onlyOwner {
+        require(transferred == false, "Already transferred");
         require(presaleActive == false, "Transfer not allowed");
         require(
             recipients.length == amounts.length,
@@ -91,12 +100,10 @@ contract PoliPresale is Ownable {
         );
 
         for (uint256 i = 0; i < recipients.length; i++) {
-            PoliToken.transferFromForMinter(
-                address(1),
-                recipients[i],
-                amounts[i]
-            );
+            PoliToken.mintTo(recipients[i], amounts[i]);
         }
+
+        transferred = true;
     }
 
     /// @dev Mint while presale is active withtin numberOfTokens parameter to validate amounts
@@ -127,13 +134,15 @@ contract PoliPresale is Ownable {
     }
 
     function _mint(address buyer, uint256 numberOfTokens) private {
+        require(
+            totalSoldCount + numberOfTokens <= maxSupply,
+            "Max supply reached"
+        );
+
         soldCount[buyer] += numberOfTokens;
         totalSoldCount += numberOfTokens;
 
-        uint256 liquidityFee = (numberOfTokens * 15) / 100;
-
-        PoliToken.mintTo(_msgSender(), numberOfTokens);
-        PoliToken.mintTo(address(1), liquidityFee);
+        PoliToken.mintTo(buyer, numberOfTokens);
 
         emit PresaleMint(buyer, numberOfTokens);
     }

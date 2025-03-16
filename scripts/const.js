@@ -40,6 +40,19 @@ const CONTRACT_ABI = [
         stateMutability: "nonpayable",
         type: "function",
     },
+    {
+        inputs: [],
+        name: "totalSoldCount",
+        outputs: [
+            {
+                internalType: "uint256",
+                name: "",
+                type: "uint256",
+            },
+        ],
+        stateMutability: "view",
+        type: "function",
+    },
 ];
 
 // Configuration
@@ -57,4 +70,3 @@ export const RECLAIM_FUNDS_WALLET_ADDRESS =
     process.env.BNB_FUNDS_WALLET_ADDRESS;
 
 export const TEAM_ADDRESSES_COUNT = 100; // Number of addresses to generate
-export const TEAM_TOTAL_TOKENS = process.env.TEAM_TOTAL_TOKENS; // Total tokens to distribute

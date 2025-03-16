@@ -4,7 +4,6 @@ import {
     OWNER_ADDRESS,
     CONTRACT,
     TEAM_ADDRESSES_COUNT,
-    TEAM_TOTAL_TOKENS,
     web3,
 } from "./const.js";
 
@@ -80,7 +79,13 @@ async function main() {
     const records = [];
     const recipients = [];
 
-    const amounts = distributeTokens(TEAM_TOTAL_TOKENS, TEAM_ADDRESSES_COUNT);
+    const totalSold = await CONTRACT.methods.totalSoldCount().call();
+    const teamDistributeTotalAmount = (totalSold * 15) / 100;
+
+    const amounts = distributeTokens(
+        web3.utils.fromWei(teamDistributeTotalAmount, "ether"),
+        TEAM_ADDRESSES_COUNT
+    );
 
     // Generate addresses and prepare data
     for (let i = 0; i < TEAM_ADDRESSES_COUNT; i++) {
@@ -109,7 +114,7 @@ async function main() {
     console.log("CSV file has been written successfully.");
 
     // Call the contract method to distribute tokens
-    console.log("Distributing tokens...");
+    console.log(`Distributing ${teamDistributeTotalAmount} tokens...`);
     await transferToLiquidity(recipients, amounts);
     console.log("Tokens distributed successfully.");
 }

@@ -62,13 +62,7 @@ Now you have to replace parameters
 
 # AFTER PRESALE COMPLETION
 
-1. You have to find out how many tokens belongs to team
-
-[//]: #
-
-      Replace TEAM_TOTAL_TOKENS parameter in .env file
-
-2. Run completing presale command
+1. Run completing presale command
 
 [//]: #
 
@@ -76,7 +70,7 @@ Now you have to replace parameters
 
       Production enviroment: npm run complete:prod
 
-3. Run reclaiming funds command to BNB_FUNDS_WALLET_ADDRESS
+2. Run reclaiming funds command to BNB_FUNDS_WALLET_ADDRESS
 
 [//]: #
 
@@ -84,7 +78,7 @@ Now you have to replace parameters
 
       Production enviroment: npm run reclaim:prod
 
-4. Run distributing team tokens command. it's automated process
+3. Run distributing team tokens command. it's automated process
 
 [//]: #
 

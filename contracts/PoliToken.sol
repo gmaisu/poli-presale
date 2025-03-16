@@ -38,14 +38,6 @@ contract PoliToken is
         _update(address(0), account, value);
     }
 
-    function transferFromForMinter(
-        address from,
-        address to,
-        uint256 value
-    ) external onlyRole(MINTER_ROLE) {
-        _update(from, to, value);
-    }
-
     function _update(
         address from,
         address to,
